@@ -67,7 +67,7 @@ namespace FoodExplorer.Data
                 .Property(h => h.ConsultationDate)
                 .HasConversion<long>();
 
-            // --- 4. 0:1 Relationship Configuration (Product <-> Favorite) ---
+            // --- 4. 1:1 Relationship Configuration (Product <-> Favorite) ---
             modelBuilder.Entity<Favorite>()
                 .HasOne(f => f.Product)
                 .WithOne(p => p.FavoriteEntry)
