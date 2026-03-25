@@ -1,8 +1,6 @@
 using FoodExplorer.Interfaces;
 using FoodExplorer.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace FoodExplorer.Services
@@ -17,27 +15,49 @@ namespace FoodExplorer.Services
         private readonly IOpenFoodFactsApi _apiService = apiService;
 
         /// <summary>
-        /// Orchestrates product retrieval using a "Cache-Aside" pattern.
-        /// Checks local storage first, falls back to API, and updates history.
+        /// Retrieves a product by barcode. 
+        /// Uses a "Cache-Aside" pattern with a 30-day expiration policy to ensure data accuracy.
         /// </summary>
         public async Task<Product?> GetProductByBarcodeAsync(string barcode)
         {
-            // Step 1: Check the local database (Cache)
+            // Step 1: Try to retrieve the product from the local SQLite database
             var product = await _productRepository.GetByBarcodeAsync(barcode);
 
-            // Step 2: If not found in cache, fetch from external API
-            if (product == null)
-            {
-                product = await _apiService.FetchProductByBarcodeAsync(barcode);
+            bool needsUpdate = false;
 
-                if (product != null)
+            if (product != null)
+            {
+                // Step 2: Check if the locally stored data is "stale" (older than 30 days)
+                // Manufacturers often update ingredients or nutritional values.
+                var dataAge = DateTime.Now - product.LastUpdatedDate;
+                if (dataAge.TotalDays > 30)
                 {
-                    // Step 3: Save to local DB for future offline/fast access
-                    await _productRepository.SaveOrUpdateAsync(product);
+                    needsUpdate = true;
                 }
             }
 
-            // Step 4: If product is found (locally or via API), record the visit in history
+            // Step 3: Fetch from API if the product is missing locally OR if data is outdated
+            if (product == null || needsUpdate)
+            {
+                try
+                {
+                    var freshProduct = await _apiService.FetchProductByBarcodeAsync(barcode);
+
+                    if (freshProduct != null)
+                    {
+                        product = freshProduct;
+                        // Update the local database with fresh data and a new timestamp
+                        await _productRepository.SaveOrUpdateAsync(product);
+                    }
+                }
+                catch (Exception)
+                {
+                    // If API call fails but we have old data, we keep the old data as a fallback
+                    // This allows the app to work offline or during API downtime.
+                }
+            }
+
+            // Step 4: Record this consultation in the history table
             if (product != null)
             {
                 var historyEntry = new History
@@ -48,11 +68,7 @@ namespace FoodExplorer.Services
                 await _historyRepository.AddEntryAsync(historyEntry);
             }
 
-            // Step 5: Return the final product object to the ViewModel
             return product;
         }
-
-        
-      
     }
 }

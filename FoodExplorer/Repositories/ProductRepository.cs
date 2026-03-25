@@ -23,20 +23,7 @@ namespace FoodExplorer.Repositories
                 .FirstOrDefaultAsync(p => p.BarCode == barcode);
         }
 
-        /// <summary>
-        /// Searches for products by name in the local database.
-        /// Note: SQLite uses EF.Functions.Like for case-insensitive searches.
-        /// </summary>
-        public async Task<List<Product>> SearchByNameAsync(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return new List<Product>();
-
-            // Using EF.Functions.Like for better SQLite compatibility with case-insensitivity
-            return await _context.Products
-                .Where(p => EF.Functions.Like(p.Name, $"%{name}%"))
-                .ToListAsync();
-        }
+        
 
         /// <summary>
         /// Handles the "Upsert" logic: Adds a new product or updates an existing one.

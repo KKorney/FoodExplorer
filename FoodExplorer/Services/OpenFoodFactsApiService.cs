@@ -15,10 +15,10 @@ namespace FoodExplorer.Services
         private readonly HttpClient _httpClient;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private DateTime _lastRequestTime = DateTime.MinValue;
-        
-        // Open Food Facts requests a limit of roughly 10 requests per minute.
-        // We set a 6-second interval to respect this limit safely.
-        private readonly TimeSpan _minInterval = TimeSpan.FromSeconds(6);
+
+        // Open Food Facts requests a limit of roughly 90 requests per minute.
+        // We set a 700-milliseonds interval to respect this limit safely.
+        private readonly TimeSpan _minInterval = TimeSpan.FromMilliseconds(700);
 
         public OpenFoodFactsApiService()
         {
