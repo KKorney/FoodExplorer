@@ -44,11 +44,4 @@ Pour garantir la solidité et l'évolution du logiciel, **Food Explorer** repose
 * **Base de données :** Entity Framework Core & SQLite
 * **Outils tiers :** ZXing (Scanner), iTextSharp (PDF), FlashCap (Caméra)
 
----
 
-## 👤 Auteur
-
-* **KKorney** - *Développeur Principal* - [Profil GitHub](https://github.com/KKorney)
-
----
-*Ce projet a été réalisé avec une attention particulière portée à l'expérience utilisateur et à la robustesse de l'architecture logicielle.*
